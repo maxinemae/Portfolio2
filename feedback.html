@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Feedback Form</title>
+  <link rel="icon" href="images/feedbacklogo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&family=Comic+Sans+MS&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+        background: url("images/feedbackbg.png");
+        background-repeat: no-repeat;
+        font-family: 'Vollkorn', serif;
+        background-size: auto;
+        background-position: center;
+    }
+    .container {
+        padding: 20px;
+        margin-top: 0;
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 16px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        text-align: center;
+        font-family: 'Lucida Handwriting', cursive; 
+        font-size: 3rem; 
+        transition: transform 0.3s; 
+        margin-bottom: 20px;
+    }
+    h1:hover {
+            transform: scale(1.1);
+            color: #052d57; 
+    }  
+    .form-row {
+        display: flex;
+        gap: 20px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+        flex: 1;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-sizing: border-box;
+    }
+    button {
+        background: linear-gradient(135deg, #4b0082, #00008b);
+        border: none;
+        color: white;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    .error {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>Feedback Form</h1>
+    <form id="feedbackForm">
+      <div class="form-group">
+        <label>Date:</label>
+        <input type="date" id="entryDate" required>
+        <span class="error" id="dateError"></span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name:</label>
+          <input type="text" id="firstName" placeholder="Enter your first name">
+          <span class="error" id="firstNameError"></span>
+        </div>
+        <div class="form-group">
+          <label>Middle Name (Optional):</label>
+          <input type="text" id="middleName" placeholder="Enter your middle name">
+          <span class="error" id="middleNameError"></span>
+        </div>
+        <div class="form-group">
+          <label>Last Name:</label>
+          <input type="text" id="lastName" placeholder="Enter your last name">
+          <span class="error" id="lastNameError"></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Email:</label>
+        <input type="email" id="email" placeholder="Enter your email">
+        <span class="error" id="emailError"></span>
+      </div>
+      <div class="form-group">
+        <label>Feedback:</label>
+        <textarea id="content" class="form-control mb-2" rows="5" maxlength="10" placeholder="Your Feedback here" required></textarea>
+        <small id="charCount" class="form-text">10 characters remaining</small>
+        <span class="error" id="messageError"></span>
+      </div>
+      <button type="submit">Done</button>
+    </form>
+  </div>
+
+  <script>
+    const charCount = document.getElementById('charCount');
+    const contentField = document.getElementById('content');
+    const emailInput = document.getElementById("email");
+    const emailError = document.getElementById("emailError");
+
+    contentField.addEventListener('input', function() {
+      const nonSpaceChars = this.value.replace(/\s/g, '').length;
+      const remaining = 10 - nonSpaceChars;
+      charCount.textContent = remaining + " characters remaining";
+    });
+
+    function preventSpacesAndCheck(input, errorId) {
+      input.value = input.value.replace(/^\s+|\s{2,}/g, ' ');
+      if (input.value.trim() === "") {
+        document.getElementById(errorId).textContent = "This field cannot contain only spaces.";
+      } else {
+        document.getElementById(errorId).textContent = "";
+      }
+    }
+
+    function preventLeadingSpace(input, errorId) {
+      input.addEventListener("input", function () {
+        if (this.value.startsWith(" ")) {
+          this.value = this.value.slice(1);
+          document.getElementById(errorId).textContent = "This field cannot start with a space.";
+        } else {
+          document.getElementById(errorId).textContent = "";
+        }
+      });
+    }
+
+    // Prevent spaces in the email input
+    emailInput.addEventListener("keydown", function(e) {
+      if (e.key === " ") {
+        e.preventDefault(); // Prevent space key
+        emailError.textContent = "Spaces are not allowed in the email address.";
+      }
+    });
+
+    emailInput.addEventListener("input", function() {
+      this.value = this.value.replace(/\s+/g, ''); // Remove all spaces
+      if (this.value.includes(" ")) {
+        emailError.textContent = "Spaces are not allowed in the email address.";
+      } else {
+        emailError.textContent = ""; // Clear error message if no spaces
+      }
+    });
+
+    function capitalizeFirstLetter(input) {
+      input.addEventListener('input', function() {
+        const value = this.value;
+        if (value.length > 0) {
+          this.value = value.charAt(0).toUpperCase() + value.slice(1);
+        }
+      });
+    }
+
+    document.getElementById("entryDate").addEventListener("focus", function() {
+      this.showPicker();
+    });
+
+    document.getElementById("feedbackForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const setError = (id, msg) => document.getElementById(id).textContent = msg;
+    const firstName = document.getElementById("firstName").value.trim();
+    const middleName = document.getElementById("middleName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const email = emailInput.value.trim();
+    const message = contentField.value.trim();
+
+    preventSpacesAndCheck(document.getElementById("firstName"), "firstNameError");
+    preventSpacesAndCheck(document.getElementById("middleName"), "middleNameError");
+    preventSpacesAndCheck(document.getElementById("lastName"), "lastNameError");
+    preventSpacesAndCheck(emailInput, "emailError");
+    preventSpacesAndCheck(contentField, "messageError");
+
+    setError("emailError", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "" : "Please enter a valid email.");
+    setError("messageError", message ? "" : "Please enter your feedback.");
+
+    if (firstName && lastName && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && message) {
+        if (!document.getElementById("firstNameError").textContent &&
+            !document.getElementById("lastNameError").textContent &&
+            !document.getElementById("emailError").textContent &&
+            !document.getElementById("messageError").textContent) {
+            window.location.href = 'thankyou.html'; // Redirect to thank you page
+        }
+    }
+});
+
+
+    preventLeadingSpace(document.getElementById("firstName"), "firstNameError");
+    preventLeadingSpace(document.getElementById("middleName"), "middleNameError");
+    preventLeadingSpace(document.getElementById("lastName"), "lastNameError");
+    preventLeadingSpace(contentField, "messageError");
+
+    capitalizeFirstLetter(document.getElementById("firstName"));
+    capitalizeFirstLetter(document.getElementById("middleName"));
+    capitalizeFirstLetter(document.getElementById("lastName"));
+    capitalizeFirstLetter(contentField);
+  </script>
+</body>
+</html>
+

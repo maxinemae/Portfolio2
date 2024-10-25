@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Journal</title>
+    <link rel="icon" href="images/journallogo.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Cedarville+Cursive&family=Comic+Sans+MS&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-image: url('images/background.png'); 
+            background-size: cover; 
+            background-position: center;
+            background-repeat: no-repeat; 
+            background-attachment: fixed;
+        }
+
+        .container {
+            padding: 20px;
+            margin-top: 0;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+        h2 {
+            font-family: 'Lucida Handwriting', cursive;
+            font-size: 3rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        h2:hover {
+            transform: scale(1.1);
+            color: #cf6c0a;
+        }
+        .container h6 {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.70rem;
+            text-align: center;
+            letter-spacing: 3px;
+        }
+        h3 {
+            color: black;
+        }
+        .entry {
+            width: 100%;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        .entry:hover {
+            transform: scale(1.02);
+        }
+        .entry:nth-child(odd) {
+            background: rgba(0, 0, 139, 0.9);
+            color: white;
+        }
+        .entry:nth-child(even) {
+            background: rgba(0, 0, 205, 0.9);
+            color: black;
+        }
+        #charCount {
+            color: black;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #4b0082, #00008b);
+            border: none;
+            color: white;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #5e0092, #1a1aff);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #800080, #4b0082);
+            border: none;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #9b008b, #6a007f);
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+/* Media Queries for responsiveness */
+@media (max-width: 768px) {
+    body {
+        background-size: auto;
+        background-attachment: fixed;
+    }
+    h2 {
+        font-size: 2.5rem;
+    }
+    .container {
+        padding: 15px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Infinite Archive Pages</h2>
+        <h6>-ˋˏ༻preserving your story, one archive at a time༺ˎˊ-</h6>
+        <form id="journalForm">
+            <input type="text" id="title" class="form-control mb-2" placeholder="Title" required>
+            <span class="error" id="titleError"></span>
+            <input type="date" id="date" class="form-control mb-2" required>
+            <span class="error" id="dateError"></span>
+            <textarea id="content" class="form-control mb-2" rows="5" maxlength="50" placeholder="Content" required></textarea>
+            <span class="error" id="contentError"></span>
+            <small id="charCount" class="form-text">50 characters remaining</small>
+            <button type="submit" class="btn btn-success">Save Entry</button>
+            <button type="button" id="deleteAllBtn" class="btn btn-danger ml-2">Delete All Entries</button>
+        </form>
+        <h3 class="mt-4">Saved Journal Entries</h3>
+        <div id="entriesContainer" class="d-flex flex-column" style="padding: 10px; border-radius: 10px;"></div>
+    </div>
+
+    <script>
+        // Get references to various elements in the DOM
+        const charCount = document.getElementById('charCount');
+        const entriesContainer = document.getElementById('entriesContainer');
+        const contentField = document.getElementById('content');
+        const titleField = document.getElementById('title');
+        const dateField = document.getElementById('date');
+        const titleError = document.getElementById('titleError');
+        const contentError = document.getElementById('contentError');
+        const dateError = document.getElementById('dateError');
+
+       // Event listener for the title input field
+        titleField.addEventListener('input', function() {
+            const titleValue = this.value;
+            if (titleValue.startsWith(" ")) {
+                titleError.textContent = "Title cannot start with a space.";
+                this.value = this.value.trimStart(); 
+            } else {
+                titleError.textContent = "";
+            }
+        });
+
+       // Event listener for the content input field
+        contentField.addEventListener('input', function() {
+            const contentValue = this.value.trimStart(); 
+            if (contentValue !== this.value) {
+                this.value = contentValue;
+                contentError.textContent = "Content cannot start with a space.";
+            } else {
+                contentError.textContent = "";
+            }
+
+            // Update the character count display
+            const remaining = 50 - this.value.length;
+            charCount.textContent = remaining + " characters remaining";
+        });
+
+        // Show date picker when date field is focused
+        dateField.addEventListener('focus', function() {
+            this.showPicker();
+        });
+
+        // Event listener for the journal form submission
+        document.getElementById('journalForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Create a new journal entry
+            const entry = document.createElement('div');
+            entry.classList.add('entry');
+            entry.dataset.content = contentField.value; 
+            entry.innerHTML = `
+                <div>
+                    <strong>${titleField.value}</strong>
+                    <em>${dateField.value}</em>
+                </div>
+                <div>
+                    <button class="btn btn-link edit-btn" onclick="editEntry(this)">✏️</button>
+                    <button class="btn btn-link delete-btn" onclick="deleteEntry(this)">🗑️</button>
+                </div>
+            `;
+            
+            entriesContainer.appendChild(entry);
+            this.reset();
+            charCount.textContent = "50 characters remaining"; 
+            titleError.textContent = ""; 
+            contentError.textContent = ""; 
+        });
+
+        // Function to edit an existing entry
+        function editEntry(btn) {
+            const entry = btn.closest('.entry');
+            titleField.value = entry.querySelector('strong').textContent;
+            dateField.value = entry.querySelector('em').textContent;
+            contentField.value = entry.dataset.content; 
+            entry.remove();
+        }
+
+        // Function to delete an entry
+        function deleteEntry(btn) {
+            if (confirm("Are you sure you want to delete this entry?")) {
+                btn.closest('.entry').remove();
+            }
+        }
+
+        // Event listener for the delete all entries button
+        document.getElementById('deleteAllBtn').addEventListener('click', function() {
+            if (entriesContainer.children.length === 0) {
+                alert("No entries to delete.");
+            } else if (confirm("Are you sure you want to delete all entries?")) {
+                entriesContainer.innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
